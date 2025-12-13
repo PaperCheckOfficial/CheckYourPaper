@@ -89,27 +89,27 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="animate-spin text-blue-500" size={48} />
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-main)]">
+        <Loader2 className="animate-spin text-[var(--brand-primary)]" size={48} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)]">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-[var(--bg-card)] border-b border-[var(--border-light)]">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center">
           <button onClick={() => router.back()} className="p-2 rounded-full hover:bg-gray-100 mr-4">
             <ArrowLeft size={20} />
           </button>
-          <h1 className="text-xl font-bold text-gray-800">Account Settings</h1>
+          <h1 className="text-xl font-bold text-[var(--text-primary)]">Account Settings</h1>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto p-6">
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-light)] rounded-lg shadow-sm p-8">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8">
             {/* Profile Picture */}
             <div className="relative">
@@ -127,7 +127,7 @@ export default function ProfilePage() {
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-1 right-1 bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
+                className="absolute bottom-1 right-1 bg-[var(--bg-card)] p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
               >
                 <Camera size={18} className="text-gray-600" />
               </button>
@@ -137,34 +137,34 @@ export default function ProfilePage() {
             <div className="flex-grow w-full">
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Display Name</label>
                   <div className="relative">
                     <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       type="text"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-md focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)]"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Email Address</label>
                   <div className="relative">
                     <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-md focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)]"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Password</label>
                   <button
                     onClick={handlePasswordReset}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-main)]"
                   >
                     <Lock size={16} />
                     Send Password Reset Email
@@ -181,7 +181,7 @@ export default function ProfilePage() {
           <button
             onClick={handleSaveChanges}
             disabled={isSaving}
-            className="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-md shadow-sm hover:bg-blue-700 disabled:bg-blue-300 flex items-center gap-2"
+            className="px-6 py-2.5 bg-[var(--brand-primary)] text-white font-semibold rounded-md shadow-sm hover:bg-[var(--brand-primary-hover)] disabled:opacity-50 disabled:bg-[var(--brand-primary)] flex items-center gap-2"
           >
             {isSaving ? <Loader2 className="animate-spin" size={18} /> : 'Save Changes'}
           </button>
