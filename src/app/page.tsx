@@ -371,7 +371,7 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
       // 1. Upload Worksheet
       let worksheetUrl = '';
       if (worksheetFile) {
-        const newBlob = await upload(worksheetFile.name, worksheetFile, {
+        const newBlob = await upload(`${Date.now()}-${worksheetFile.name}`, worksheetFile, {
           access: 'public',
           handleUploadUrl: '/api/upload',
         });
@@ -383,7 +383,7 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
       let finalMarkschemeId = selectedMarkschemeId;
 
       if (markschemeType === 'new' && markschemeFile) {
-        const newBlob = await upload(markschemeFile.name, markschemeFile, {
+        const newBlob = await upload(`${Date.now()}-${markschemeFile.name}`, markschemeFile, {
           access: 'public',
           handleUploadUrl: '/api/upload',
         });

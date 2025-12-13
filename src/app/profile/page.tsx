@@ -49,7 +49,7 @@ export default function ProfilePage() {
     try {
       let newPhotoURL = photoURL;
       if (newPhotoFile) {
-        const newBlob = await upload(newPhotoFile.name, newPhotoFile, {
+        const newBlob = await upload(`${Date.now()}-${newPhotoFile.name}`, newPhotoFile, {
           access: 'public',
           handleUploadUrl: '/api/upload',
         });
