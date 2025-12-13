@@ -39,6 +39,8 @@ import {
 } from 'firebase/firestore';
 import { auth, db, appId } from '@/lib/firebase';
 import { upload } from '@vercel/blob/client';
+import { useAuth } from '@/context/AuthContext';
+import { ShieldAlert } from 'lucide-react';
 
 
 
@@ -50,6 +52,7 @@ const ProfileMenu = ({ onLogout, user }: { onLogout: () => void; user: any }) =>
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { userProfile } = useAuth();
 
   useEffect(() => {
     const handleClickOutside = (event: any) => {
@@ -95,12 +98,25 @@ const ProfileMenu = ({ onLogout, user }: { onLogout: () => void; user: any }) =>
             className="w-full text-left px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-gray-50 hover:text-[var(--text-primary)] flex items-center gap-2">
             <User size={16} /> Account
           </button>
-          <button className="w-full text-left px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-gray-50 hover:text-[var(--text-primary)] flex items-center gap-2">
+          <button
+            onClick={() => { router.push('/about'); setIsOpen(false); }}
+            className="w-full text-left px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-gray-50 hover:text-[var(--text-primary)] flex items-center gap-2">
             <HelpCircle size={16} /> About CheckYourPaper
           </button>
-          <button className="w-full text-left px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-gray-50 hover:text-[var(--text-primary)] flex items-center gap-2">
+          <button
+            onClick={() => { router.push('/legal'); setIsOpen(false); }}
+            className="w-full text-left px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-gray-50 hover:text-[var(--text-primary)] flex items-center gap-2">
             <Shield size={16} /> Terms and Policy
           </button>
+
+          {userProfile?.status === 'admin' && (
+            <button
+              onClick={() => { router.push('/admin'); setIsOpen(false); }}
+              className="w-full text-left px-4 py-2 text-sm text-[var(--brand-primary)] hover:bg-blue-50 font-medium flex items-center gap-2"
+            >
+              <ShieldAlert size={16} /> Admin Panel
+            </button>
+          )}
 
           <div className="border-t border-gray-100 mt-1 pt-1">
             <button
@@ -731,35 +747,14 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
 // --- Main App Component ---
 
 export default function App() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuth();
   const [view, setView] = useState('dashboard'); // 'dashboard' | 'add-document'
   const [docs, setDocs] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const router = useRouter();
 
-  // --- Auth Logic ---
-  useEffect(() => {
-    if (!auth) {
-      console.error("Firebase services failed to initialize.");
-      setLoading(false);
-      return;
-    }
-
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [loading, user, router]);
+  // Auth logic handled by AuthContext now
 
 
   // --- Real Firestore Data Fetching ---

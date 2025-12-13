@@ -10,12 +10,12 @@ import {
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { upload } from '@vercel/blob/client';
-import { User, Mail, Camera, Lock, ArrowLeft, Loader2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { User, Mail, Camera, Lock, ArrowLeft, Loader2, ChevronLeft } from 'lucide-react';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading: authLoading } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -27,19 +27,12 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        setDisplayName(currentUser.displayName || '');
-        setEmail(currentUser.email || '');
-        setPhotoURL(currentUser.photoURL || '');
-      } else {
-        router.push('/login');
-      }
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, [router]);
+    if (user) {
+      setDisplayName(user.displayName || '');
+      setEmail(user.email || '');
+      setPhotoURL(user.photoURL || '');
+    }
+  }, [user]);
 
   const handleSaveChanges = async () => {
     if (!user) return;
@@ -89,7 +82,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--bg-main)]">
         <Loader2 className="animate-spin text-[var(--brand-primary)]" size={48} />
@@ -102,8 +95,11 @@ export default function ProfilePage() {
       {/* Header */}
       <header className="bg-[var(--bg-card)] border-b border-[var(--border-light)]">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center">
-          <button onClick={() => router.back()} className="p-2 rounded-full hover:bg-gray-100 mr-4">
-            <ArrowLeft size={20} />
+          <button
+            onClick={() => router.back()}
+            className="p-2 rounded-full hover:text-[var(--text-secondary)] hover:scale-130 transition-all"
+          >
+            <ChevronLeft size={20} />
           </button>
           <h1 className="text-xl font-bold text-[var(--text-primary)]">Account Settings</h1>
         </div>
@@ -139,7 +135,7 @@ export default function ProfilePage() {
             <div className="flex-grow w-full">
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Display Name</label>
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Name</label>
                   <div className="relative">
                     <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
@@ -151,25 +147,25 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Email Address</label>
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Email</label>
                   <div className="relative">
                     <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-md focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)]"
+                      className="w-full pl-9 pr-4 py-2.5 h-12 border border-gray-300 rounded-md focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)]"
                     />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Password</label>
                   <button
-                    onClick={handlePasswordReset}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-main)]"
+                    // onClick={handlePasswordReset}
+                    className="cursor-not-allowed w-full flex items-center h-12 justify-start gap-2 px-3 py-2.5 border border-gray-300 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-main)]"
                   >
                     <Lock size={16} />
-                    Send Password Reset Email
+                    ••••••••••
                   </button>
                 </div>
               </div>

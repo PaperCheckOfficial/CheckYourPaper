@@ -46,8 +46,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--bg-main)]">
-      <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Login or Sign Up</h1>
       <div className="flex flex-col gap-4 w-full max-w-sm p-8 bg-[var(--bg-card)] rounded-[var(--radius-lg)] border border-[var(--border-light)] shadow-sm">
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Login or Sign Up</h1>
         <input
           type="email"
           value={email}
