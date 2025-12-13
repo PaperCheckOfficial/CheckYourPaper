@@ -45,26 +45,54 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-      <h1>Login or Sign Up</h1>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '300px' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--bg-main)]">
+      <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Login or Sign Up</h1>
+      <div className="flex flex-col gap-4 w-full max-w-sm p-8 bg-[var(--bg-card)] rounded-[var(--radius-lg)] border border-[var(--border-light)] shadow-sm">
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
+          className="w-full px-4 py-2 rounded-[var(--radius-md)] border border-[var(--border-light)] focus:ring-2 focus:ring-[var(--brand-primary)] outline-none bg-white text-[var(--text-primary)]"
         />
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
+          className="w-full px-4 py-2 rounded-[var(--radius-md)] border border-[var(--border-light)] focus:ring-2 focus:ring-[var(--brand-primary)] outline-none bg-white text-[var(--text-primary)]"
         />
-        <button onClick={handleEmailLogin}>Login with Email</button>
-        <button onClick={handleEmailSignUp}>Sign Up with Email</button>
-        <button onClick={handleGoogleSignIn}>Sign in with Google</button>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        <button
+          onClick={handleEmailLogin}
+          className="w-full py-2.5 rounded-[var(--radius-md)] bg-[var(--brand-primary)] text-white font-medium hover:bg-[var(--brand-primary-hover)] transition-colors shadow-sm"
+        >
+          Login with Email
+        </button>
+        <button
+          onClick={handleEmailSignUp}
+          className="w-full py-2.5 rounded-[var(--radius-md)] border border-[var(--brand-primary)] text-[var(--brand-primary)] font-medium hover:bg-blue-50 transition-colors"
+        >
+          Sign Up with Email
+        </button>
+
+        <div className="relative my-2">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-[var(--border-light)]" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-[var(--bg-card)] px-2 text-[var(--text-secondary)]">Or continue with</span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleGoogleSignIn}
+          className="w-full py-2.5 rounded-[var(--radius-md)] border border-[var(--border-light)] bg-white text-[var(--text-primary)] font-medium hover:bg-gray-50 transition-colors shadow-sm"
+        >
+          Sign in with Google
+        </button>
+        {error && <p className="text-red-500 text-sm text-center mt-2">{error}</p>}
       </div>
     </div>
   );
 }
+
