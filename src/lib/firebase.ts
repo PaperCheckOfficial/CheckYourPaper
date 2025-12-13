@@ -2,7 +2,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
 // For more information on how to get this, visit:
@@ -22,7 +21,6 @@ const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
 const appId = process.env.NEXT_PUBLIC_FIREBASE_APP_ID || 'default-app-id';
 
-export { app, auth, db, storage, appId };
+export { app, auth, db, appId };

@@ -16,7 +16,11 @@ import {
   Shield,
   Search,
   Loader2,
-  Radar
+  Radar,
+  Trash2,
+  Edit,
+  ExternalLink,
+  FileInput
 } from 'lucide-react';
 import {
   onAuthStateChanged,
@@ -28,14 +32,13 @@ import {
   query,
   onSnapshot,
   orderBy,
-  serverTimestamp
+  serverTimestamp,
+  deleteDoc,
+  doc,
+  updateDoc
 } from 'firebase/firestore';
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL
-} from 'firebase/storage';
-import { auth, db, storage, appId } from '@/lib/firebase';
+import { auth, db, appId } from '@/lib/firebase';
+import { upload } from '@vercel/blob/client';
 
 
 
@@ -114,45 +117,148 @@ const ProfileMenu = ({ onLogout, user }: { onLogout: () => void; user: any }) =>
 };
 
 // 2. Document Card (Standardized Report Type)
-const DocumentCard = ({ title, date, worksheetType }: { title: string; date: string; worksheetType: string }) => (
-  <div className="bg-[var(--bg-card)] border border-[var(--border-light)] rounded-[var(--radius-lg)] p-4 flex flex-col hover:shadow-md transition-all cursor-pointer group hover:-translate-y-1 duration-300 h-full">
-    {/* Thumbnail */}
-    <div className="bg-gray-50 rounded-[var(--radius-md)] h-40 mb-4 flex items-center justify-center relative overflow-hidden group-hover:bg-blue-50/30 transition-colors">
-      <div className="transform group-hover:scale-105 transition-transform duration-300 relative">
-        {/* Generic Report Icon */}
-        <div className="w-20 h-24 bg-white border border-gray-200 shadow-sm rounded flex flex-col items-center p-2">
-          <div className="w-full h-2 bg-gray-100 rounded mb-2"></div>
-          <div className="w-full h-1 bg-gray-100 rounded mb-1"></div>
-          <div className="w-2/3 h-1 bg-gray-100 rounded mb-3"></div>
-          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs mt-auto">
-            A+
+const DocumentCard = ({
+  doc,
+  onRename,
+  onDelete
+}: {
+  doc: any;
+  onRename: (id: string, newTitle: string) => void;
+  onDelete: (id: string) => void;
+}) => {
+  const [showMenu, setShowMenu] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [newTitle, setNewTitle] = useState(doc.title);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: any) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (isRenaming && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isRenaming]);
+
+  const handleRenameSubmit = () => {
+    if (newTitle.trim() && newTitle !== doc.title) {
+      onRename(doc.id, newTitle);
+    }
+    setIsRenaming(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleRenameSubmit();
+    if (e.key === 'Escape') {
+      setNewTitle(doc.title);
+      setIsRenaming(false);
+    }
+  };
+
+  return (
+    <div className="bg-[var(--bg-card)] border border-[var(--border-light)] rounded-[var(--radius-lg)] p-4 flex flex-col hover:shadow-md transition-all cursor-pointer group hover:-translate-y-1 duration-300 h-full relative">
+      {/* Thumbnail */}
+      <div className="bg-gray-50 rounded-[var(--radius-md)] h-40 mb-4 flex items-center justify-center relative overflow-hidden group-hover:bg-blue-50/30 transition-colors">
+        <div className="transform group-hover:scale-105 transition-transform duration-300 relative">
+          {/* Generic Report Icon */}
+          <div className="w-20 h-24 bg-white border border-gray-200 shadow-sm rounded flex flex-col items-center p-2">
+            <div className="w-full h-2 bg-gray-100 rounded mb-2"></div>
+            <div className="w-full h-1 bg-gray-100 rounded mb-1"></div>
+            <div className="w-2/3 h-1 bg-gray-100 rounded mb-3"></div>
+            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs mt-auto">
+              A+
+            </div>
+          </div>
+          <div className="absolute -right-2 -bottom-2 bg-[var(--brand-primary)] text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">
+            REPORT
           </div>
         </div>
-        <div className="absolute -right-2 -bottom-2 bg-[var(--brand-primary)] text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">
-          REPORT
-        </div>
       </div>
-    </div>
 
-    {/* Footer */}
-    <div className="flex justify-between items-start mt-auto">
-      <div>
-        <h3 className="font-semibold text-[var(--text-primary)] line-clamp-1 text-sm">{title}</h3>
-        <div className="flex items-center gap-2 mt-1">
-          <p className="text-[var(--text-secondary)] text-xs">{date}</p>
-          {worksheetType && (
-            <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
-              {worksheetType}
-            </span>
+      {/* Footer */}
+      <div className="flex justify-between items-start mt-auto relative">
+        <div className="flex-grow mr-2">
+          {isRenaming ? (
+            <input
+              ref={inputRef}
+              type="text"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              onBlur={handleRenameSubmit}
+              onKeyDown={handleKeyDown}
+              className="w-full text-sm font-semibold text-[var(--text-primary)] border border-[var(--brand-primary)] rounded px-1 py-0.5 outline-none"
+            />
+          ) : (
+            <h3 className="font-semibold text-[var(--text-primary)] line-clamp-1 text-sm" title={doc.title}>
+              {doc.title}
+            </h3>
+          )}
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-[var(--text-secondary)] text-xs">{doc.date}</p>
+            {doc.worksheetType && (
+              <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
+                {doc.worksheetType}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+            className="text-[var(--text-secondary)] hover:bg-gray-100 p-1 rounded-[var(--radius-sm)] transition-colors"
+          >
+            <MoreHorizontal size={16} />
+          </button>
+
+          {showMenu && (
+            <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-[var(--radius-md)] shadow-xl border border-[var(--border-light)] py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+              <button
+                onClick={(e) => { e.stopPropagation(); window.open(doc.worksheetUrl, '_blank'); setShowMenu(false); }}
+                className="w-full text-left px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-gray-50 hover:text-[var(--text-primary)] flex items-center gap-2"
+              >
+                <FileText size={14} /> Open Worksheet
+              </button>
+
+              {doc.markschemeUrl && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); window.open(doc.markschemeUrl, '_blank'); setShowMenu(false); }}
+                  className="w-full text-left px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-gray-50 hover:text-[var(--text-primary)] flex items-center gap-2"
+                >
+                  <CheckCircle2 size={14} /> Open Markscheme
+                </button>
+              )}
+
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsRenaming(true); setShowMenu(false); }}
+                className="w-full text-left px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-gray-50 hover:text-[var(--text-primary)] flex items-center gap-2"
+              >
+                <Edit size={14} /> Rename
+              </button>
+
+              <div className="border-t border-gray-100 my-1"></div>
+
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete(doc.id); setShowMenu(false); }}
+                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+              >
+                <Trash2 size={14} /> Delete
+              </button>
+            </div>
           )}
         </div>
       </div>
-      <button className="text-[var(--text-secondary)] hover:bg-gray-100 p-1 rounded-[var(--radius-sm)] transition-colors">
-        <MoreHorizontal size={16} />
-      </button>
     </div>
-  </div>
-);
+  );
+};
 
 // 3. Add Document Wizard Page
 const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void; onFinish: () => void; userId: string }) => {
@@ -256,7 +362,7 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
   };
 
   const handleSubmit = async () => {
-    if (!db || !auth.currentUser || !storage) {
+    if (!db || !auth.currentUser) {
       console.error("Firebase services are not initialized correctly.");
       return;
     }
@@ -265,9 +371,11 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
       // 1. Upload Worksheet
       let worksheetUrl = '';
       if (worksheetFile) {
-        const storageRef = ref(storage, `users/${userId}/uploads/${Date.now()}_${worksheetFile.name}`);
-        const snapshot = await uploadBytes(storageRef, worksheetFile);
-        worksheetUrl = await getDownloadURL(snapshot.ref);
+        const newBlob = await upload(worksheetFile.name, worksheetFile, {
+          access: 'public',
+          handleUploadUrl: '/api/upload',
+        });
+        worksheetUrl = newBlob.url;
       }
 
       // 2. Upload Markscheme (if new)
@@ -275,9 +383,11 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
       let finalMarkschemeId = selectedMarkschemeId;
 
       if (markschemeType === 'new' && markschemeFile) {
-        const msRef = ref(storage, `users/${userId}/markschemes/${Date.now()}_${markschemeFile.name}`);
-        const msSnapshot = await uploadBytes(msRef, markschemeFile);
-        markschemeUrl = await getDownloadURL(msSnapshot.ref);
+        const newBlob = await upload(markschemeFile.name, markschemeFile, {
+          access: 'public',
+          handleUploadUrl: '/api/upload',
+        });
+        markschemeUrl = newBlob.url;
 
         // Optional: Save this new markscheme to a 'markschemes' collection for reuse
         finalMarkschemeId = 'new_upload';
@@ -697,6 +807,31 @@ export default function App() {
     );
   });
 
+  // --- Document Actions ---
+  const handleDeleteDoc = async (docId: string) => {
+    if (!confirm('Are you sure you want to delete this report?')) return;
+    if (!user || !db) return;
+
+    try {
+      await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'reports', docId));
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      alert("Failed to delete document.");
+    }
+  };
+
+  const handleRenameDoc = async (docId: string, newTitle: string) => {
+    if (!user || !db) return;
+    try {
+      await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'reports', docId), {
+        title: newTitle
+      });
+    } catch (error) {
+      console.error("Error renaming document:", error);
+      alert("Failed to rename document.");
+    }
+  };
+
   // --- Render ---
 
   if (loading || !user) {
@@ -791,9 +926,9 @@ export default function App() {
             filteredDocs.map((doc) => (
               <DocumentCard
                 key={doc.id}
-                title={doc.title}
-                date={doc.date}
-                worksheetType={doc.worksheetType}
+                doc={doc}
+                onRename={handleRenameDoc}
+                onDelete={handleDeleteDoc}
               />
             ))
           ) : docs.length > 0 && searchQuery ? (

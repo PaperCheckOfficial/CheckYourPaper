@@ -8,8 +8,8 @@ import {
   updateEmail,
   sendPasswordResetEmail,
 } from 'firebase/auth';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { auth, storage } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
+import { upload } from '@vercel/blob/client';
 import { User, Mail, Camera, Lock, ArrowLeft, Loader2 } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -49,9 +49,11 @@ export default function ProfilePage() {
     try {
       let newPhotoURL = photoURL;
       if (newPhotoFile) {
-        const storageRef = ref(storage, `users/${user.uid}/profile-pictures/${newPhotoFile.name}`);
-        const snapshot = await uploadBytes(storageRef, newPhotoFile);
-        newPhotoURL = await getDownloadURL(snapshot.ref);
+        const newBlob = await upload(newPhotoFile.name, newPhotoFile, {
+          access: 'public',
+          handleUploadUrl: '/api/upload',
+        });
+        newPhotoURL = newBlob.url;
       }
 
       await updateProfile(user, {
