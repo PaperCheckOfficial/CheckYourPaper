@@ -38,38 +38,7 @@ import {
 import { auth, db, storage, appId } from '@/lib/firebase';
 
 
-// --- CSS Variables & Global Styles ---
-const globalStyles = `
-  :root {
-    /* Brand Colors */
-    --brand-primary: #1e61f0;
-    --brand-primary-hover: #164dbf;
-    
-    /* Backgrounds */
-    --bg-main: #f8f9fb;
-    --bg-card: #ffffff;
-    
-    /* Text */
-    --text-primary: #111827;
-    --text-secondary: #6b7280;
-    
-    /* Borders */
-    --border-light: #e5e7eb;
-    --border-dashed: #bfdbfe;
-    
-    /* Radii */
-    --radius-sm: 0.375rem;
-    --radius-md: 0.5rem;
-    --radius-lg: 0.75rem;
-    --radius-xl: 1rem;
-  }
 
-  body {
-    background-color: var(--bg-main);
-    color: var(--text-primary);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  }
-`;
 
 // --- Components ---
 
@@ -733,7 +702,7 @@ export default function App() {
   if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--bg-main)]">
-        <style>{globalStyles}</style>
+
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--brand-primary)]"></div>
       </div>
     );
@@ -743,7 +712,7 @@ export default function App() {
   if (view === 'add-document') {
     return (
       <>
-        <style>{globalStyles}</style>
+
         <AddDocumentPage
           onCancel={() => setView('dashboard')}
           onFinish={() => setView('dashboard')}
@@ -756,7 +725,7 @@ export default function App() {
   // View: Dashboard
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg-main)]">
-      <style>{globalStyles}</style>
+
 
       {/* Header */}
       <header className="bg-[var(--bg-card)] border-b border-[var(--border-light)] px-6 py-3 flex justify-between items-center sticky top-0 z-20 shadow-sm">
