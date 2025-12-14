@@ -13,6 +13,12 @@
   --text-primary: #111827;
   --text-secondary: #6b7280;
 
+  /* Fonts - Mapped from Next.js Layout */
+  --font-primary: var(--font-lexend);
+  /* Headings */
+  --font-secondary: var(--font-lexend);
+  /* Body */
+
   /* Borders */
   --border-light: #e5e7eb;
   --border-dashed: #bfdbfe;
@@ -31,8 +37,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-secondary);
+  --font-mono: monospace;
+  --font-display: var(--font-primary);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -45,5 +52,14 @@
 body {
   background-color: var(--bg-main);
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-secondary);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-primary);
 }
