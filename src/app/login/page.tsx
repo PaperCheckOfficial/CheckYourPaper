@@ -19,7 +19,8 @@ import {
   Link, Cloud, Zap, Star, Heart, Smile, Lock, Shield, CreditCard,
   BarChart, TrendingUp, Code, Terminal, Database, Cpu, Server,
   Wifi, Bluetooth, Radio, Speaker, Mic, Video, Camera, Image,
-  Printer, Smartphone, Tablet, Laptop, Monitor, Mouse, Keyboard
+  Printer, Smartphone, Tablet, Laptop, Monitor, Mouse, Keyboard,
+  Radar
 } from 'lucide-react';
 
 import IconBackground from '@/components/IconBackground';
@@ -136,7 +137,18 @@ export default function LoginPage() {
 
       <IconBackground />
 
-      <div className="relative z-10 w-full max-w-sm p-8 bg-white/90 backdrop-blur-md rounded-[var(--radius-xl)] border border-[var(--border-light)] shadow-2xl animate-in fade-in zoom-in-95 duration-300">
+      <div className="absolute top-0 h-[80px] left-1/2 transform -translate-x-1/2 z-10 w-full max-w-sm bg-white/90 backdrop-blur-md rounded-b-[var(--radius-xl)] border border-[var(--border-light)] shadow-lg animate-in fade-in zoom-in-95 duration-300 flex items-center justify-center px-4">
+        <a href="/about">
+          <div className="flex items-center gap-2">
+            <div className="text-[var(--brand-primary)]">
+              <Radar size={32} />
+            </div>
+            <h1 className="font-bold select-none text-2xl text-[var(--text-primary)] tracking-tight">CheckYourPaper</h1>
+          </div>
+        </a>
+      </div>
+
+      <div className="relative z-10 w-full max-w-sm p-8 bg-white/90 backdrop-blur-md rounded-[var(--radius-xl)] border border-[var(--border-light)] shadow-lg animate-in fade-in zoom-in-95 duration-300">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">
             {isSignUp ? 'Create Account' : 'Welcome Back'}

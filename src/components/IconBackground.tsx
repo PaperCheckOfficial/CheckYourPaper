@@ -40,7 +40,7 @@ const IconCell = ({ Icon, mousePos }: { Icon: any, mousePos: { x: number, y: num
 
                 // Wave effect logic
                 const maxDist = 250;
-                const maxScale = 2.2;
+                const maxScale = 1.6;
 
                 let newScale = 1;
                 if (dist < maxDist) {
@@ -68,7 +68,7 @@ const IconCell = ({ Icon, mousePos }: { Icon: any, mousePos: { x: number, y: num
                 style={{
                     transform: `scale(${scale})`,
                     opacity: 0.1 + (scale - 1) * 0.3,
-                    color: scale > 1.05 ? 'var(--brand-primary)' : 'inherit'
+                    color: scale > 1.2 ? 'var(--brand-primary)' : 'inherit'
                 }}
                 size={24}
                 className="transition-colors duration-200"
