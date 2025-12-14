@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         if (loading) return;
 
-        const isPublicRoute = ['/login'].includes(pathname);
+        const isPublicRoute = ['/login', '/about', '/legal'].includes(pathname);
         const isWaitlistPage = pathname === '/waitlist';
 
         if (!user && !isPublicRoute) {

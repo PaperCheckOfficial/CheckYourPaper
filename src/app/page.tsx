@@ -20,7 +20,11 @@ import {
   Trash2,
   Edit,
   ExternalLink,
-  FileInput
+  FileInput,
+  X,
+  AlertCircle,
+  Lightbulb,
+  Award
 } from 'lucide-react';
 import {
   onAuthStateChanged,
@@ -31,6 +35,7 @@ import {
   addDoc,
   query,
   onSnapshot,
+  getDocs,
   orderBy,
   serverTimestamp,
   deleteDoc,
@@ -132,15 +137,138 @@ const ProfileMenu = ({ onLogout, user }: { onLogout: () => void; user: any }) =>
   );
 };
 
+// 4. Report Modal Component
+const ReportModal = ({ report, onClose }: { report: any; onClose: () => void }) => {
+  if (!report) return null;
+
+  const { gradingResult, reportOptions } = report;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-[var(--radius-xl)] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gray-50/50">
+          <div>
+            <h2 className="text-2xl font-bold text-[var(--text-primary)]">{report.title}</h2>
+            <p className="text-sm text-[var(--text-secondary)] mt-1">
+              {report.worksheetType} • {report.date}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-grow overflow-y-auto p-8 space-y-8">
+
+          {/* Grade Summary */}
+          {reportOptions?.fullGrade && gradingResult?.grade && (
+            <div className="flex items-center gap-6 p-6 bg-blue-50 rounded-[var(--radius-lg)] border border-blue-100">
+              <div className="flex-shrink-0 w-24 h-24 bg-white rounded-full flex items-center justify-center border-4 border-[var(--brand-primary)] shadow-sm">
+                <span className="text-3xl font-bold text-[var(--brand-primary)]">{gradingResult.grade}</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">Overall Performance</h3>
+                <p className="text-[var(--text-secondary)]">{gradingResult.feedback}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Mistakes Analysis */}
+          {reportOptions?.mistakeExplanation && gradingResult?.mistakes?.length > 0 && (
+            <div>
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                <AlertCircle className="text-red-500" /> Areas for Improvement
+              </h3>
+              <div className="space-y-4">
+                {gradingResult.mistakes.map((mistake: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-red-50 rounded-[var(--radius-md)] border border-red-100">
+                    <p className="font-semibold text-red-700 mb-1">{mistake.question}</p>
+                    <p className="text-red-600 text-sm">{mistake.explanation}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tips */}
+          {reportOptions?.tips && gradingResult?.tips?.length > 0 && (
+            <div>
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                <Lightbulb className="text-amber-500" /> Tips for Next Time
+              </h3>
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {gradingResult.tips.map((tip: string, idx: number) => (
+                  <li key={idx} className="flex items-start gap-3 p-4 bg-amber-50 rounded-[var(--radius-md)] border border-amber-100">
+                    <CheckCircle2 size={18} className="text-amber-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-amber-800 text-sm">{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Skills */}
+          {reportOptions?.skillsSummary && gradingResult?.skills?.length > 0 && (
+            <div>
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                <Award className="text-purple-500" /> Skills Demonstrated
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {gradingResult.skills.map((skill: string, idx: number) => (
+                  <span key={idx} className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm font-medium border border-purple-100">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Raw Output Fallback */}
+          {!gradingResult && (
+            <div className="p-8 text-center text-gray-500">
+              <p>Analysis is still processing or failed. Please try again later.</p>
+            </div>
+          )}
+
+        </div>
+
+        {/* Footer Actions */}
+        <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
+          <button
+            onClick={() => window.open(report.worksheetUrl, '_blank')}
+            className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-gray-100 rounded-[var(--radius-md)] transition-colors"
+          >
+            View Worksheet
+          </button>
+          <button
+            onClick={onClose}
+            className="px-6 py-2 text-sm font-medium text-white bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] rounded-[var(--radius-md)] transition-colors shadow-sm"
+          >
+            Close Report
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // 2. Document Card (Standardized Report Type)
 const DocumentCard = ({
   doc,
   onRename,
-  onDelete
+  onDelete,
+  onOpen
 }: {
   doc: any;
   onRename: (id: string, newTitle: string) => void;
   onDelete: (id: string) => void;
+  onOpen: (doc: any) => void;
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
@@ -182,19 +310,22 @@ const DocumentCard = ({
   return (
     <div className="bg-[var(--bg-card)] border border-[var(--border-light)] rounded-[var(--radius-lg)] p-4 flex flex-col hover:shadow-md transition-all cursor-pointer group hover:-translate-y-1 duration-300 h-full relative">
       {/* Thumbnail */}
-      <div className="bg-gray-50 rounded-[var(--radius-md)] h-40 mb-4 flex items-center justify-center relative overflow-hidden group-hover:bg-blue-50/30 transition-colors">
+      <div
+        onClick={() => doc.status === 'processing' ? null : onOpen(doc)}
+        className={`bg-gray-50 rounded-[var(--radius-md)] h-40 mb-4 flex items-center justify-center relative overflow-hidden group-hover:bg-blue-50/30 transition-colors ${doc.status === 'processing' ? 'cursor-default' : 'cursor-pointer'}`}
+      >
         <div className="transform group-hover:scale-105 transition-transform duration-300 relative">
           {/* Generic Report Icon */}
           <div className="w-20 h-24 bg-white border border-gray-200 shadow-sm rounded flex flex-col items-center p-2">
             <div className="w-full h-2 bg-gray-100 rounded mb-2"></div>
             <div className="w-full h-1 bg-gray-100 rounded mb-1"></div>
             <div className="w-2/3 h-1 bg-gray-100 rounded mb-3"></div>
-            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs mt-auto">
-              A+
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mt-auto ${doc.status === 'processing' ? 'bg-gray-100 text-gray-500' : 'bg-blue-100 text-blue-600'}`}>
+              {doc.status === 'processing' ? <Loader2 className="animate-spin" size={14} /> : (doc.gradingResult?.grade || 'A+')}
             </div>
           </div>
-          <div className="absolute -right-2 -bottom-2 bg-[var(--brand-primary)] text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">
-            REPORT
+          <div className={`absolute -right-2 -bottom-2 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm ${doc.status === 'processing' ? 'bg-gray-400' : 'bg-[var(--brand-primary)]'}`}>
+            {doc.status === 'processing' ? 'PROCESSING' : 'REPORT'}
           </div>
         </div>
       </div>
@@ -289,6 +420,7 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
 
   const [markschemeType, setMarkschemeType] = useState('existing');
   const [markschemeFile, setMarkschemeFile] = useState<File | null>(null);
+  const [markschemeName, setMarkschemeName] = useState(''); // New state for markscheme name
   const [selectedMarkschemeId, setSelectedMarkschemeId] = useState('');
 
   // We can fetch these from DB too
@@ -320,12 +452,22 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
   // Fetch markschemes on mount
   useEffect(() => {
     if (!userId) return;
-    // In a real app, this would query a 'markschemes' collection
-    // For this demo, we'll just simulate a few or query if you had them
-    setExistingMarkschemes([
-      { id: 'ms1', name: 'IB Math HL 2023 (Sample)' },
-      { id: 'ms2', name: 'A-Level English Lit v2 (Sample)' }
-    ]);
+
+    const fetchMarkschemes = async () => {
+      try {
+        const q = query(collection(db, 'users', userId, 'markschemes'), orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        const schemes = querySnapshot.docs.map((doc: any) => ({
+          id: doc.id,
+          name: doc.data().name
+        }));
+        setExistingMarkschemes(schemes);
+      } catch (error) {
+        console.error("Error fetching markschemes:", error);
+      }
+    };
+
+    fetchMarkschemes();
   }, [userId]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -355,9 +497,15 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
 
     // Step 2 validation
     if (step === 2) {
-      if (markschemeType === 'new' && !markschemeFile) {
-        newErrors.markschemeFile = true;
-        isValid = false;
+      if (markschemeType === 'new') {
+        if (!markschemeFile) {
+          newErrors.markschemeFile = true;
+          isValid = false;
+        }
+        if (!markschemeName.trim()) {
+          newErrors.markschemeName = true;
+          isValid = false;
+        }
       }
       if (markschemeType === 'existing' && !selectedMarkschemeId) {
         newErrors.selectedMarkschemeId = true;
@@ -404,12 +552,10 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
           handleUploadUrl: '/api/upload',
         });
         markschemeUrl = newBlob.url;
-
-        // Optional: Save this new markscheme to a 'markschemes' collection for reuse
-        finalMarkschemeId = 'new_upload';
+        finalMarkschemeId = 'new_upload'; // Or handle this better if API returns the new ID
       }
 
-      // 3. Save Report Metadata to Firestore
+      // 3. Create Initial Report with 'Processing' Status
       const reportData = {
         title: worksheetName,
         worksheetType,
@@ -418,19 +564,55 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
         markschemeId: finalMarkschemeId,
         markschemeUrl,
         reportOptions,
-        status: 'processing', // This would trigger a cloud function in a real app
+        status: 'processing', // Initial status
         createdAt: serverTimestamp(),
-        userId: userId // Storing userId in doc for security rules/indexing
+        userId: userId
       };
 
-      await addDoc(collection(db, 'artifacts', appId, 'users', userId, 'reports'), reportData);
+      const docRef = await addDoc(collection(db, 'artifacts', appId, 'users', userId, 'reports'), reportData);
 
+      // 4. Close Wizard Immediately
       setIsUploading(false);
       onFinish();
 
+      // 5. Simulate Background Processing (Async)
+      setTimeout(async () => {
+        try {
+          // Dummy Result
+          const gradingResult = {
+            grade: "A*",
+            percentage: "90%",
+            feedback: "Good effort! You showed a solid understanding of the core concepts. However, there were some calculation errors in Section B that affected your final score. Pay closer attention to unit conversions.",
+            mistakes: [
+              { question: "Q3 (b)", explanation: "You forgot to convert cm to meters before calculating the area." },
+              { question: "Q5", explanation: "The quadratic formula was applied incorrectly. Check the sign of the discriminant." }
+            ],
+            tips: [
+              "Always double-check your units before starting a calculation.",
+              "Write down every step of your working to maximize method marks."
+            ],
+            skills: [
+              "Algebraic Manipulation",
+              "Data Interpretation",
+              "Geometry"
+            ]
+          };
+
+          // Update Document to Completed
+          await updateDoc(docRef, {
+            status: 'completed',
+            gradingResult: gradingResult
+          });
+          console.log("Report processing completed for:", docRef.id);
+        } catch (err) {
+          console.error("Background processing failed:", err);
+          await updateDoc(docRef, { status: 'failed' });
+        }
+      }, 5000); // 5 second delay to simulate AI processing
+
     } catch (error) {
       console.error("Error creating report:", error);
-      // Placeholder for custom modal UI instead of alert()
+      alert("Failed to create report. Please try again.");
       setIsUploading(false);
     }
   };
@@ -480,9 +662,22 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
           <button
             onClick={handleNext}
             disabled={isUploading}
-            className="px-6 py-2 text-sm font-medium rounded-[var(--radius-md)] bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white transition-colors shadow-sm flex items-center gap-2"
+            className={`
+              px-6 py-2 text-sm font-medium rounded-[var(--radius-md)] text-white transition-all shadow-sm flex items-center gap-2
+              ${isUploading
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] hover:scale-105 active:scale-95'
+              }
+            `}
           >
-            {isUploading ? <Loader2 className="animate-spin" size={16} /> : step === 3 ? 'Finish' : 'Next'}
+            {isUploading ? (
+              <>
+                <Loader2 className="animate-spin" size={16} />
+                <span>Analyzing...</span>
+              </>
+            ) : (
+              step === 3 ? 'Start Analysis' : 'Next Step'
+            )}
           </button>
         </div>
       </header>
@@ -579,7 +774,7 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
                   <div className="mt-4 p-4 bg-gray-50 rounded-[var(--radius-md)] text-sm text-[var(--text-secondary)] border border-[var(--border-light)] animate-in fade-in slide-in-from-top-2">
                     <p>
                       {worksheetType === 'Math' && "Best for structured problems with clear right/wrong answers and step-by-step working."}
-                      {worksheetType === 'Balanced' && "Suitable for subjects like Science or Geography that mix short answers with longer explanations."}
+                      {worksheetType === 'Balanced' && "Suitable for subjects like Science or Economics that mix calculations with short and long explanations."}
                       {worksheetType === 'Essay-Heavy' && "Optimized for long-form writing, English Literature, History, or Philosophy papers."}
                     </p>
                   </div>
@@ -665,29 +860,50 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
                   </div>
 
                   {markschemeType === 'new' && (
-                    <>
-                      <input
-                        type="file"
-                        ref={msFileInputRef}
-                        className="hidden"
-                        onChange={(e) => { if (e.target.files && e.target.files[0]) setMarkschemeFile(e.target.files[0]); }}
-                      />
-                      <div
-                        onClick={() => msFileInputRef.current?.click()}
-                        className={`
-                                ml-9 mt-4 h-24 border-2 border-dashed rounded-[var(--radius-md)] flex items-center justify-center text-xs transition-colors animate-in fade-in cursor-pointer
-                                ${markschemeFile
-                            ? 'border-green-400 text-green-600 bg-green-50'
-                            : errors.markschemeFile
-                              ? 'border-red-500 bg-red-50 text-red-500'
-                              : 'border-gray-300 bg-white text-gray-500 hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]'
-                          }
-                            `}
-                      >
-                        <Plus size={16} className="mr-2" />
-                        {markschemeFile ? markschemeFile.name : 'Upload New File'}
+                    <div className="ml-9 mt-4 space-y-4 animate-in fade-in slide-in-from-top-2">
+                      <div>
+                        <label className="block text-xs font-bold text-[var(--text-secondary)] mb-1 uppercase">Markscheme Name</label>
+                        <input
+                          type="text"
+                          value={markschemeName}
+                          onChange={(e) => {
+                            setMarkschemeName(e.target.value);
+                            if (errors.markschemeName) setErrors({ ...errors, markschemeName: false });
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          placeholder="e.g., Math HL Paper 1 Markscheme"
+                          className={`w-full px-3 py-2 rounded-[var(--radius-md)] border text-sm focus:ring-2 outline-none transition-all ${errors.markschemeName
+                            ? 'border-red-500 focus:ring-red-500 bg-red-50'
+                            : 'border-[var(--border-light)] focus:ring-[var(--brand-primary)] focus:border-transparent'
+                            }`}
+                        />
                       </div>
-                    </>
+
+                      <div>
+                        <label className="block text-xs font-bold text-[var(--text-secondary)] mb-1 uppercase">Upload File</label>
+                        <input
+                          type="file"
+                          ref={msFileInputRef}
+                          className="hidden"
+                          onChange={(e) => { if (e.target.files && e.target.files[0]) setMarkschemeFile(e.target.files[0]); }}
+                        />
+                        <div
+                          onClick={(e) => { e.stopPropagation(); msFileInputRef.current?.click(); }}
+                          className={`
+                                  h-24 border-2 border-dashed rounded-[var(--radius-md)] flex items-center justify-center text-xs transition-colors cursor-pointer
+                                  ${markschemeFile
+                              ? 'border-green-400 text-green-600 bg-green-50'
+                              : errors.markschemeFile
+                                ? 'border-red-500 bg-red-50 text-red-500'
+                                : 'border-gray-300 bg-white text-gray-500 hover:border-[var(--brand-primary)] hover:text-[var(--brand-primary)]'
+                            }
+                              `}
+                        >
+                          <Plus size={16} className="mr-2" />
+                          {markschemeFile ? markschemeFile.name : 'Upload New File'}
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
 
@@ -827,6 +1043,11 @@ export default function App() {
     }
   };
 
+  const [selectedReport, setSelectedReport] = useState<any>(null);
+  const handleOpenReport = (doc: any) => {
+    setSelectedReport(doc);
+  };
+
   // --- Render ---
 
   if (loading || !user) {
@@ -924,6 +1145,7 @@ export default function App() {
                 doc={doc}
                 onRename={handleRenameDoc}
                 onDelete={handleDeleteDoc}
+                onOpen={handleOpenReport}
               />
             ))
           ) : docs.length > 0 && searchQuery ? (
