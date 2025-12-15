@@ -26,7 +26,7 @@ export default function AboutPage() {
                 </header>
 
                 {/* Content */}
-                <main className="max-w-3xl mx-auto p-6 sm:p-10">
+                <main className="max-w-[60vw] mx-auto p-6 sm:p-10">
                     <div className="bg-white rounded-[var(--radius-xl)] shadow-sm border border-[var(--border-light)] p-8 sm:p-12">
 
                         <div className="flex flex-col items-center text-center mb-10">

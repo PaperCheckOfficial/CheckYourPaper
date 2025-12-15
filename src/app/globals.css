@@ -25,8 +25,8 @@
 
   /* Radii */
   --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
   --radius-xl: 1rem;
 
   /* Default Next.js vars */

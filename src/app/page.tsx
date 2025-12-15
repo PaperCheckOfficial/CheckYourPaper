@@ -45,6 +45,7 @@ import {
 import { auth, db, appId } from '@/lib/firebase';
 import { upload } from '@vercel/blob/client';
 import { useAuth } from '@/context/AuthContext';
+import { deleteBlobs } from './actions';
 import { ShieldAlert } from 'lucide-react';
 
 
@@ -76,19 +77,20 @@ const ProfileMenu = ({ onLogout, user }: { onLogout: () => void; user: any }) =>
     <div className="relative" ref={menuRef}>
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-1.5 rounded-[var(--radius-md)] transition-colors pr-3 border border-transparent hover:border-gray-200 select-none"
+        className="flex items-center gap-2 cursor-pointer hover:bg-gray-200 p-[3px] rounded-full transition-colors border border-transparent hover:border-gray-200 select-none"
       >
+        {/* <div className="hidden sm:block text-left">
+          <p className="text-xs font-bold text-[var(--text-primary)]">Account</p>
+        </div>
+        <ChevronDown size={14} className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} /> */}
+
         {photoURL ? (
-          <img src={photoURL} alt={displayName} className="h-8 w-8 rounded-full ring-2 ring-white shadow-sm" />
+          <img src={photoURL} alt={displayName} className="h-10 w-10 rounded-full ring-2 ring-white shadow-sm" />
         ) : (
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[var(--brand-primary)] to-cyan-400 overflow-hidden ring-2 ring-white shadow-sm flex items-center justify-center text-white font-bold text-xs">
+          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[var(--brand-primary)] to-cyan-400 overflow-hidden ring-2 ring-white shadow-sm flex items-center justify-center text-white font-bold text-xs">
             {displayName ? displayName.substring(0, 2).toUpperCase() : 'US'}
           </div>
         )}
-        <div className="hidden sm:block text-left">
-          <p className="text-xs font-bold text-[var(--text-primary)]">{displayName}</p>
-        </div>
-        <ChevronDown size={14} className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </div>
 
       {isOpen && (
@@ -138,141 +140,22 @@ const ProfileMenu = ({ onLogout, user }: { onLogout: () => void; user: any }) =>
 };
 
 // 4. Report Modal Component
-const ReportModal = ({ report, onClose }: { report: any; onClose: () => void }) => {
-  if (!report) return null;
 
-  const { gradingResult, reportOptions } = report;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-[var(--radius-xl)] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gray-50/50">
-          <div>
-            <h2 className="text-2xl font-bold text-[var(--text-primary)]">{report.title}</h2>
-            <p className="text-sm text-[var(--text-secondary)] mt-1">
-              {report.worksheetType} • {report.date}
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500"
-          >
-            <X size={24} />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-grow overflow-y-auto p-8 space-y-8">
-
-          {/* Grade Summary */}
-          {reportOptions?.fullGrade && gradingResult?.grade && (
-            <div className="flex items-center gap-6 p-6 bg-blue-50 rounded-[var(--radius-lg)] border border-blue-100">
-              <div className="flex-shrink-0 w-24 h-24 bg-white rounded-full flex items-center justify-center border-4 border-[var(--brand-primary)] shadow-sm">
-                <span className="text-3xl font-bold text-[var(--brand-primary)]">{gradingResult.grade}</span>
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">Overall Performance</h3>
-                <p className="text-[var(--text-secondary)]">{gradingResult.feedback}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Mistakes Analysis */}
-          {reportOptions?.mistakeExplanation && gradingResult?.mistakes?.length > 0 && (
-            <div>
-              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                <AlertCircle className="text-red-500" /> Areas for Improvement
-              </h3>
-              <div className="space-y-4">
-                {gradingResult.mistakes.map((mistake: any, idx: number) => (
-                  <div key={idx} className="p-4 bg-red-50 rounded-[var(--radius-md)] border border-red-100">
-                    <p className="font-semibold text-red-700 mb-1">{mistake.question}</p>
-                    <p className="text-red-600 text-sm">{mistake.explanation}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Tips */}
-          {reportOptions?.tips && gradingResult?.tips?.length > 0 && (
-            <div>
-              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                <Lightbulb className="text-amber-500" /> Tips for Next Time
-              </h3>
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {gradingResult.tips.map((tip: string, idx: number) => (
-                  <li key={idx} className="flex items-start gap-3 p-4 bg-amber-50 rounded-[var(--radius-md)] border border-amber-100">
-                    <CheckCircle2 size={18} className="text-amber-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-amber-800 text-sm">{tip}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Skills */}
-          {reportOptions?.skillsSummary && gradingResult?.skills?.length > 0 && (
-            <div>
-              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                <Award className="text-purple-500" /> Skills Demonstrated
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {gradingResult.skills.map((skill: string, idx: number) => (
-                  <span key={idx} className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm font-medium border border-purple-100">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Raw Output Fallback */}
-          {!gradingResult && (
-            <div className="p-8 text-center text-gray-500">
-              <p>Analysis is still processing or failed. Please try again later.</p>
-            </div>
-          )}
-
-        </div>
-
-        {/* Footer Actions */}
-        <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
-          <button
-            onClick={() => window.open(report.worksheetUrl, '_blank')}
-            className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-gray-100 rounded-[var(--radius-md)] transition-colors"
-          >
-            View Worksheet
-          </button>
-          <button
-            onClick={onClose}
-            className="px-6 py-2 text-sm font-medium text-white bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] rounded-[var(--radius-md)] transition-colors shadow-sm"
-          >
-            Close Report
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // 2. Document Card (Standardized Report Type)
 const DocumentCard = ({
   doc,
   onRename,
-  onDelete,
-  onOpen
+  onDelete
 }: {
   doc: any;
   onRename: (id: string, newTitle: string) => void;
   onDelete: (id: string) => void;
-  onOpen: (doc: any) => void;
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(doc.title);
+  const [imgError, setImgError] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -311,43 +194,48 @@ const DocumentCard = ({
     <div className="bg-[var(--bg-card)] border border-[var(--border-light)] rounded-[var(--radius-lg)] p-4 flex flex-col hover:shadow-md transition-all cursor-pointer group hover:-translate-y-1 duration-300 h-full relative">
       {/* Thumbnail */}
       <div
-        onClick={() => doc.status === 'processing' ? null : onOpen(doc)}
-        className={`bg-gray-50 rounded-[var(--radius-md)] h-40 mb-4 flex items-center justify-center relative overflow-hidden group-hover:bg-blue-50/30 transition-colors ${doc.status === 'processing' ? 'cursor-default' : 'cursor-pointer'}`}
+        onClick={() => doc.status === 'processing' ? null : window.open(`/report/${doc.id}`, '_blank')}
+        className={`bg-gray-50 rounded-[var(--radius-md)] h-40 mb-4 flex items-center justify-center relative overflow-hidden group-hover:bg-blue-50/30 transition-colors ${doc.status === 'processing' ? 'cursor-default opacity-50' : 'cursor-pointer'}`}
       >
-        <div className="transform group-hover:scale-105 transition-transform duration-300 relative">
-          {/* Generic Report Icon */}
-          <div className="w-20 h-24 bg-white border border-gray-200 shadow-sm rounded flex flex-col items-center p-2">
-            <div className="w-full h-2 bg-gray-100 rounded mb-2"></div>
-            <div className="w-full h-1 bg-gray-100 rounded mb-1"></div>
-            <div className="w-2/3 h-1 bg-gray-100 rounded mb-3"></div>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs mt-auto ${doc.status === 'processing' ? 'bg-gray-100 text-gray-500' : 'bg-blue-100 text-blue-600'}`}>
-              {doc.status === 'processing' ? <Loader2 className="animate-spin" size={14} /> : (doc.gradingResult?.grade || 'A+')}
-            </div>
-          </div>
-          <div className={`absolute -right-2 -bottom-2 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm ${doc.status === 'processing' ? 'bg-gray-400' : 'bg-[var(--brand-primary)]'}`}>
-            {doc.status === 'processing' ? 'PROCESSING' : 'REPORT'}
-          </div>
-        </div>
+        {doc.worksheetUrl && !imgError && (
+          <img
+            src={doc.worksheetUrl}
+            alt="Worksheet Preview"
+            className="absolute inset-0 w-full h-full object-cover object-top opacity-90 group-hover:opacity-100 transition-opacity z-10"
+            onError={() => setImgError(true)}
+          />
+        )}
       </div>
 
       {/* Footer */}
-      <div className="flex justify-between items-start mt-auto relative">
-        <div className="flex-grow mr-2">
-          {isRenaming ? (
-            <input
-              ref={inputRef}
-              type="text"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              onBlur={handleRenameSubmit}
-              onKeyDown={handleKeyDown}
-              className="w-full text-sm font-semibold text-[var(--text-primary)] border border-[var(--brand-primary)] rounded px-1 py-0.5 outline-none"
-            />
-          ) : (
-            <h3 className="font-semibold text-[var(--text-primary)] line-clamp-1 text-sm" title={doc.title}>
-              {doc.title}
-            </h3>
-          )}
+      <div className="flex flex-row justify-between items-start mt-auto relative">
+        <div className="flex-col items-start mr-2">
+          <div className="flex-col items-start mr-2">
+            {isRenaming ? (
+              <input
+                ref={inputRef}
+                type="text"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                onBlur={handleRenameSubmit}
+                onKeyDown={handleKeyDown}
+                className="w-full text-sm font-semibold text-[var(--text-primary)] border border-[var(--brand-primary)] rounded px-1 py-0.5 outline-none"
+              />
+            ) : (
+              doc.status === 'processing' ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="animate-spin" size={14} />
+                  <h3 className="font-semibold text-[var(--text-primary)] line-clamp-1 text-sm" title={doc.title}>
+                    Processing {doc.title}...
+                  </h3>
+                </div>
+              ) : (
+                <h3 className="font-semibold text-[var(--text-primary)] line-clamp-1 text-sm" title={doc.title}>
+                  {doc.title}
+                </h3>
+              )
+            )}
+          </div>
           <div className="flex items-center gap-2 mt-1">
             <p className="text-[var(--text-secondary)] text-xs">{doc.date}</p>
             {doc.worksheetType && (
@@ -404,6 +292,7 @@ const DocumentCard = ({
         </div>
       </div>
     </div>
+
   );
 };
 
@@ -1024,6 +913,27 @@ export default function App() {
     if (!user || !db) return;
 
     try {
+      // 1. Find the document to get the URLs
+      const docToDelete = docs.find(d => d.id === docId);
+
+      if (docToDelete) {
+        const urlsToDelete: string[] = [];
+        if (docToDelete.worksheetUrl) urlsToDelete.push(docToDelete.worksheetUrl);
+        if (docToDelete.markschemeUrl) urlsToDelete.push(docToDelete.markschemeUrl);
+
+        // 2. Delete blobs from storage if they exist
+        if (urlsToDelete.length > 0) {
+          try {
+            await deleteBlobs(urlsToDelete);
+          } catch (blobError) {
+            console.error("Failed to delete blobs, proceeding to delete document metadata:", blobError);
+            // We continue to delete the document even if blob deletion fails, 
+            // to avoid state mismatch where user sees a document that they wanted to delete.
+          }
+        }
+      }
+
+      // 3. Delete document from Firestore
       await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'reports', docId));
     } catch (error) {
       console.error("Error deleting document:", error);
@@ -1043,12 +953,7 @@ export default function App() {
     }
   };
 
-  const [selectedReport, setSelectedReport] = useState<any>(null);
-  const handleOpenReport = (doc: any) => {
-    setSelectedReport(doc);
-  };
-
-  // --- Render ---
+  // --- Document Actions ---
 
   if (loading || !user) {
     return (
@@ -1079,7 +984,7 @@ export default function App() {
 
 
       {/* Header */}
-      <header className="bg-[var(--bg-card)] border-b border-[var(--border-light)] px-6 py-3 flex justify-between items-center sticky top-0 z-20 shadow-sm">
+      <header className="bg-[var(--bg-card)] rounded-[var(--radius-lg)] w-[80vw] lg:w-[80vw] sm:w-[100vw] md:w-[90vw] mx-auto border border-[var(--border-light)] px-4 py-3 mt-3 flex justify-between items-center sticky top-0 z-20">
         <div className="flex items-center gap-2">
           <div className="text-[var(--brand-primary)]">
             <Radar size={32} />
@@ -1145,7 +1050,6 @@ export default function App() {
                 doc={doc}
                 onRename={handleRenameDoc}
                 onDelete={handleDeleteDoc}
-                onOpen={handleOpenReport}
               />
             ))
           ) : docs.length > 0 && searchQuery ? (
