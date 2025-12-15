@@ -45,7 +45,7 @@ import {
 import { auth, db, appId } from '@/lib/firebase';
 import { upload } from '@vercel/blob/client';
 import { useAuth } from '@/context/AuthContext';
-import { deleteBlobs } from './actions';
+import { deleteBlobs, generateReport } from './actions';
 import { ShieldAlert } from 'lucide-react';
 
 
@@ -464,40 +464,10 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
       setIsUploading(false);
       onFinish();
 
-      // 5. Simulate Background Processing (Async)
-      setTimeout(async () => {
-        try {
-          // Dummy Result
-          const gradingResult = {
-            grade: "A*",
-            percentage: "90%",
-            feedback: "Good effort! You showed a solid understanding of the core concepts. However, there were some calculation errors in Section B that affected your final score. Pay closer attention to unit conversions.",
-            mistakes: [
-              { question: "Q3 (b)", explanation: "You forgot to convert cm to meters before calculating the area." },
-              { question: "Q5", explanation: "The quadratic formula was applied incorrectly. Check the sign of the discriminant." }
-            ],
-            tips: [
-              "Always double-check your units before starting a calculation.",
-              "Write down every step of your working to maximize method marks."
-            ],
-            skills: [
-              "Algebraic Manipulation",
-              "Data Interpretation",
-              "Geometry"
-            ]
-          };
-
-          // Update Document to Completed
-          await updateDoc(docRef, {
-            status: 'completed',
-            gradingResult: gradingResult
-          });
-          console.log("Report processing completed for:", docRef.id);
-        } catch (err) {
-          console.error("Background processing failed:", err);
-          await updateDoc(docRef, { status: 'failed' });
-        }
-      }, 5000); // 5 second delay to simulate AI processing
+      // 5. Trigger AI Processing (fire-and-forget, don't await)
+      generateReport(docRef.id, userId).catch(err => {
+        console.error("Background report generation failed:", err);
+      });
 
     } catch (error) {
       console.error("Error creating report:", error);
