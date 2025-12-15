@@ -15,7 +15,9 @@ import {
     Award,
     AlertCircle,
     FileText,
-    ArrowLeft
+    ArrowLeft,
+    Percent,
+    ChevronLeft
 } from 'lucide-react';
 
 export default function ReportPage() {
@@ -69,10 +71,10 @@ export default function ReportPage() {
             <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--bg-main)]">
                 <h1 className="text-2xl font-bold text-[var(--text-primary)]">Report not found</h1>
                 <button
-                    onClick={() => router.push('/')}
-                    className="mt-4 px-4 py-2 bg-[var(--brand-primary)] text-white rounded-[var(--radius-md)] hover:bg-[var(--brand-primary-hover)] transition-colors"
+                    onClick={() => window.close()}
+                    className="px-6 py-2 text-sm font-medium text-white bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] rounded-[var(--radius-md)] transition-colors shadow-sm"
                 >
-                    Return to Dashboard
+                    Close Tab
                 </button>
             </div>
         );
@@ -86,32 +88,41 @@ export default function ReportPage() {
 
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gray-50/50">
-                    <div>
-                        <h2 className="text-2xl font-bold text-[var(--text-primary)]">{report.title}</h2>
-                        <p className="text-sm text-[var(--text-secondary)] mt-1">
-                            {report.worksheetType} • {report.date}
-                        </p>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => router.back()}
+                            className="text-[var(--text-secondary)] hover:scale-110 hover:text-[var(--text-primary)] transition-all"
+                        >
+                            <ChevronLeft className="w-8 h-8" />
+                        </button>
+                        <div>
+                            <h2 className="text-2xl font-bold text-[var(--text-primary)]">{report.title}</h2>
+                            <p className="text-sm text-[var(--text-secondary)] mt-1">
+                                {report.worksheetType} • {gradingResult.marksObtained}/{gradingResult.totalMarks}
+                            </p>
+                        </div>
                     </div>
                     <button
-                        onClick={() => router.push('/')}
-                        className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-gray-200/50 rounded-full transition-colors"
+                        onClick={() => window.open(report.worksheetUrl, '_blank')}
+                        className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-gray-100 rounded-[var(--radius-md)] transition-colors border border-transparent hover:border-gray-200"
                     >
-                        <ArrowLeft size={16} /> Dashboard
+                        View Worksheet
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="flex-grow p-8 space-y-8">
+                <div className="flex-grow space-y-8 p-6">
 
                     {/* Grade Summary */}
                     {reportOptions?.fullGrade && gradingResult?.grade && (
-                        <div className="flex items-center gap-6 p-6 bg-blue-50 rounded-[var(--radius-lg)] border border-blue-100">
-                            <div className="flex-shrink-0 w-24 h-24 bg-white rounded-full flex items-center justify-center border-4 border-[var(--brand-primary)] shadow-sm">
-                                <span className="text-3xl font-bold text-[var(--brand-primary)]">{gradingResult.grade}</span>
-                            </div>
+                        <div className="flex flex-col gap-4">
+                            {/* <div className="flex items-center gap-4">
+                                <span className="text-3xl font-bold text-[var(--brand-primary)]">{gradingResult.marksObtained}/{gradingResult.totalMarks}</span>
+                                <span className="text-3xl font-bold text-[var(--brand-primary)]">({gradingResult.marksObtained / gradingResult.totalMarks * 100}%)</span>
+                            </div> */}
                             <div>
-                                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">Overall Performance</h3>
-                                <p className="text-[var(--text-secondary)]">{gradingResult.feedback}</p>
+                                <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2"><Percent className="text-[var(--brand-primary)]" /> Overall Performance</h3>
+                                <p className="text-[var(--text-secondary)]">The candidate obtained a score of {gradingResult.marksObtained} out of {gradingResult.totalMarks} ({gradingResult.marksObtained / gradingResult.totalMarks * 100}%). {gradingResult.feedback}</p>
                             </div>
                         </div>
                     )}
@@ -169,28 +180,10 @@ export default function ReportPage() {
                     {/* Raw Output Fallback */}
                     {!gradingResult && (
                         <div className="p-8 text-center text-gray-500">
-                            <p>Analysis is still processing or failed. Please try again later.</p>
+                            <p>Analysis failed. Please report this error to <a href="mailto:businesstntr@gmail.com" className="text-blue-500 hover:underline">businesstntr@gmail.com</a> and try again later.</p>
                         </div>
                     )}
 
-                </div>
-
-                {/* Footer Actions */}
-                <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
-                    {report.worksheetUrl && (
-                        <button
-                            onClick={() => window.open(report.worksheetUrl, '_blank')}
-                            className="px-4 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-gray-100 rounded-[var(--radius-md)] transition-colors border border-transparent hover:border-gray-200"
-                        >
-                            View Worksheet
-                        </button>
-                    )}
-                    <button
-                        onClick={() => window.close()}
-                        className="px-6 py-2 text-sm font-medium text-white bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] rounded-[var(--radius-md)] transition-colors shadow-sm"
-                    >
-                        Close Tab
-                    </button>
                 </div>
             </div>
         </div>

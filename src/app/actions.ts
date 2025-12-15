@@ -16,11 +16,11 @@ async function fetchFileAsBase64(url: string): Promise<{ data: string; mimeType:
             console.error(`Failed to fetch file from ${url}: ${response.statusText}`);
             return null;
         }
-        
+
         const contentType = response.headers.get('content-type') || 'application/octet-stream';
         const arrayBuffer = await response.arrayBuffer();
         const base64 = Buffer.from(arrayBuffer).toString('base64');
-        
+
         return {
             data: base64,
             mimeType: contentType
@@ -33,7 +33,7 @@ async function fetchFileAsBase64(url: string): Promise<{ data: string; mimeType:
 
 export async function generateReport(reportId: string, userId: string) {
     const appId = process.env.NEXT_PUBLIC_FIREBASE_APP_ID || 'default-app-id';
-    
+
     // Helper to update status to failed
     const markAsFailed = async (error: string) => {
         if (!adminDb) return; // Can't update if no DB connection
@@ -82,12 +82,11 @@ export async function generateReport(reportId: string, userId: string) {
 
         // 2. Initialize Gemini
         const genAI = new GoogleGenerativeAI(apiKey);
-        
+
         const responseSchema: ResponseSchema = {
             type: SchemaType.OBJECT,
             properties: {
                 grade: { type: SchemaType.STRING, description: "The letter grade (e.g., A*, A, B, C, D, E, F)" },
-                percentage: { type: SchemaType.STRING, description: "The percentage score (e.g., '85%')" },
                 totalMarks: { type: SchemaType.NUMBER, description: "Total marks available for the assessment" },
                 marksObtained: { type: SchemaType.NUMBER, description: "Total marks obtained by the student" },
                 feedback: { type: SchemaType.STRING, description: "Overall feedback on the student's performance" },
@@ -111,16 +110,25 @@ export async function generateReport(reportId: string, userId: string) {
                     description: "Tips for improving performance"
                 }
             },
-            required: ["grade", "percentage", "totalMarks", "marksObtained", "feedback", "questions", "tips"]
+            required: ["grade", "totalMarks", "marksObtained", "feedback", "questions", "tips"]
         };
 
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-1.5-pro-latest',
+        const isEssayHeavy = reportData.worksheetType === 'Essay-Heavy';
+        const modelName = isEssayHeavy ? 'gemini-2.5-flash-lite' : 'gemini-2.5-flash';
+
+        const modelParams: any = {
+            model: modelName,
             generationConfig: {
                 responseMimeType: 'application/json',
                 responseSchema: responseSchema
             }
-        });
+        };
+
+        if (!isEssayHeavy) {
+            modelParams.thinkingConfig = { thinkingBudget: 3200, includeThoughts: true };
+        }
+
+        const model = genAI.getGenerativeModel(modelParams);
 
         // 3. Prepare content parts for Gemini
         const contentParts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }> = [];
@@ -144,7 +152,7 @@ export async function generateReport(reportId: string, userId: string) {
         }
 
         promptText += `Please analyze the student's work and provide:
-1. An overall grade (A* to F scale)
+1. An overall grade (A* to D and then U scale)
 2. A percentage score
 3. Total marks available and marks obtained
 4. Comprehensive feedback on their performance
@@ -199,7 +207,7 @@ Be fair, constructive, and educational in your assessment. If you cannot identif
 
     } catch (error) {
         console.error(`Error processing report ${reportId}:`, error);
-        
+
         // Update document status to failed
         try {
             await reportRef.update({

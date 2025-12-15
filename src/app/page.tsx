@@ -535,7 +535,7 @@ const AddDocumentPage = ({ onCancel, onFinish, userId }: { onCancel: () => void;
                 <span>Analyzing...</span>
               </>
             ) : (
-              step === 3 ? 'Start Analysis' : 'Next Step'
+              step === 3 ? 'Start Analysis' : 'Next'
             )}
           </button>
         </div>
